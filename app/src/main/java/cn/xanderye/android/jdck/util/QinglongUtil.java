@@ -98,9 +98,10 @@ public class QinglongUtil {
         params.put("remarks", qlEnv.getRemarks());
         params.put("value", qlEnv.getValue());
         HttpUtil.ResEntity resEntity;
-        if (qlEnv.getQlId() != null) {
+        String envId = resolveEnvId(qlEnv);
+        if (envId != null) {
             // 更新
-            params.put("id", qlEnv.getQlId());
+            params.put("id", envId);
             resEntity = HttpUtil.doPutJSON(url, headers, null, params.toJSONString());
 
         } else {
@@ -131,9 +132,10 @@ public class QinglongUtil {
         Map<String, Object> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + qlInfo.getToken());
         HttpUtil.ResEntity resEntity;
-        if (qlEnv.getQlId() != null) {
+        String envId = resolveEnvId(qlEnv);
+        if (envId != null) {
             JSONArray ja=new JSONArray();
-            ja.add(qlEnv.getQlId());
+            ja.add(envId);
 
             resEntity = HttpUtil.doPutJSON(url, headers, null, ja.toJSONString());
             if (resEntity.getStatusCode() != 200) {
@@ -145,5 +147,12 @@ public class QinglongUtil {
             }
         }
         return ;
+    }
+
+    /**
+     * 青龙旧版环境变量主键为 _id，新版 Open API 返回 id。
+     */
+    private static String resolveEnvId(QlEnv qlEnv) {
+        return qlEnv.getQlId() != null ? qlEnv.getQlId() : qlEnv.getDaidaiId();
     }
 }

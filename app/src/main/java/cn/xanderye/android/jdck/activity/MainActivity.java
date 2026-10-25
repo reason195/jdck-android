@@ -1,6 +1,7 @@
 package cn.xanderye.android.jdck.activity;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         // 添加按钮
         addBtn = findViewById(R.id.addBtn);
         addBtn.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(R.string.add_account_title);
             final AlertDialog dialog = builder.create();
             View dialogView = View.inflate(context, R.layout.activity_phone, null);
@@ -243,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
                     String[] permissions = new String[]{"android.permission.RECEIVE_SMS", "android.permission.READ_SMS"};
                     boolean result = checkPermissionAllGranted(permissions);
                     if (!result) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                         builder.setMessage("未获取到短信读取权限，是否跳转设置页面并开启权限（MIUI需要额外开启通知类短信权限）？");
                         builder.setPositiveButton("设置", (dialog, which) -> {
                             openSettings();
@@ -262,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                 edit.apply();
             } break;
             case 3: {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                 builder.setMessage(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME + "\n@XanderYe 版权所有 @yclown修改");
                 builder.setPositiveButton("项目页面", (dialog, which) -> {
                     Uri uri = Uri.parse("https://github.com/yclown/jdck-android");
@@ -496,7 +497,10 @@ public class MainActivity extends AppCompatActivity {
             targetEnv.setName("JD_COOKIE");
         }
         targetEnv.setValue(cookie);
-        targetEnv.setRemarks(phone);
+        if (isNew) {
+            // 已有环境变量的备注可能是用户自定义的，更新时保留
+            targetEnv.setRemarks(phone);
+        }
         boolean success = PanelUtil.saveEnv(qlInfo, targetEnv);
         if (!success) {
             throw new IOException("保存环境变量失败");

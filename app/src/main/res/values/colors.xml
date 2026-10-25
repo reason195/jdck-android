@@ -10,6 +10,8 @@
     <color name="text_secondary">#6B7280</color>
     <color name="outline">#E5E7EB</color>
     <color name="secondary_container">#EEF2FF</color>
+    <color name="ripple_on_primary">#40FFFFFF</color>
+    <color name="ripple_on_surface">#294F46E5</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>
