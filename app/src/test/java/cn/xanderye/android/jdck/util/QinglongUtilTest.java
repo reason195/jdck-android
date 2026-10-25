@@ -25,6 +25,7 @@ public class QinglongUtilTest {
     private ServerSocket serverSocket;
     private Thread serverThread;
     private int port;
+    private volatile String responseBody = "{\"code\":200}";
     private final AtomicReference<String> method = new AtomicReference<>();
     private final AtomicReference<String> body = new AtomicReference<>();
 
@@ -62,6 +63,28 @@ public class QinglongUtilTest {
         assertTrue(QinglongUtil.saveEnv(qlInfo(), env));
         assertEquals("POST", method.get());
         assertTrue(body.get().startsWith("["));
+    }
+
+    @Test
+    public void backfillsIdFromArrayResponseAfterCreate() throws Exception {
+        responseBody = "{\"code\":200,\"data\":[{\"id\":\"42\",\"name\":\"JD_COOKIE\"}]}";
+        QlEnv env = JSON.parseObject(
+                "{\"name\":\"JD_COOKIE\",\"value\":\"pt_key=x;pt_pin=reason195;\"}",
+                QlEnv.class);
+
+        assertTrue(QinglongUtil.saveEnv(qlInfo(), env));
+        assertEquals("42", env.getDaidaiId());
+    }
+
+    @Test
+    public void backfillsLegacyIdFromObjectResponseAfterCreate() throws Exception {
+        responseBody = "{\"code\":200,\"data\":{\"_id\":\"legacy-1\"}}";
+        QlEnv env = JSON.parseObject(
+                "{\"name\":\"JD_COOKIE\",\"value\":\"pt_key=x;pt_pin=reason195;\"}",
+                QlEnv.class);
+
+        assertTrue(QinglongUtil.saveEnv(qlInfo(), env));
+        assertEquals("legacy-1", env.getQlId());
     }
 
     private QlInfo qlInfo() {
@@ -109,7 +132,7 @@ public class QinglongUtilTest {
             }
             body.set(new String(bodyBytes, 0, read, StandardCharsets.UTF_8));
 
-            byte[] response = "{\"code\":200}".getBytes(StandardCharsets.UTF_8);
+            byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(("HTTP/1.1 200 OK\r\n"
                     + "Content-Type: application/json\r\n"

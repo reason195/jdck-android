@@ -46,7 +46,7 @@ public class PanelUtil {
             if (isDaidai(qlInfo)) {
                 DaidaiUtil.enableEnv(qlInfo, qlEnv);
             } else {
-                QinglongUtil.EableEnv(qlInfo, qlEnv);
+                QinglongUtil.enableEnv(qlInfo, qlEnv);
             }
             return null;
         });

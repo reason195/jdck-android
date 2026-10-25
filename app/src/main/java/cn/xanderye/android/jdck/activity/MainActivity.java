@@ -32,7 +32,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -51,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private static final Pattern PHONE_PATTERN = Pattern.compile("1\\d{10}");
 
     private SharedPreferences config;
-
-    private String cookie = null;
 
     private Set<String> phoneSet = new HashSet<>();
 
@@ -89,14 +86,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return false;
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                //添加Cookie获取操作
-                CookieManager cookieManager = CookieManager.getInstance();
-                cookie = cookieManager.getCookie(url);
-                super.onPageFinished(view, url);
             }
         });
         // 配置账号下拉框
@@ -156,33 +145,17 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "请先选择账号", Toast.LENGTH_SHORT).show();
                 return;
             }
-            String[] info=  selectedPhone.split(" ");
-            String Phone=info[0];
-            String execJs = "var account='" + Phone + "';";
-            execJs += "document.getElementsByClassName('policy_tip-checkbox')[0].click();";
-            execJs += "var evt=new InputEvent('input',{inputType:'insertText',data:account,dataTransfer:null,isComposing:false});";
-            execJs += "document.getElementById('username').value=account;";
-            execJs += "document.getElementById('username').dispatchEvent(evt);";
-            Matcher matcher = PHONE_PATTERN.matcher(Phone);
-            if (matcher.matches()) {
-                execJs += "document.getElementsByClassName('acc-input mobile J_ping')[0].value=account;";
-                execJs += "document.getElementsByClassName('acc-input mobile J_ping')[0].dispatchEvent(evt);";
-            }
-            if(info.length>1){
-                String Pwd=info[1];
-                execJs += "var password='" + Pwd + "';";
-                execJs += "var evt=new InputEvent('input',{inputType:'insertText',data:password,dataTransfer:null,isComposing:false});";
-                execJs += "document.getElementById('pwd').value=password;";
-                execJs += "document.getElementById('pwd').dispatchEvent(evt);";
-                execJs += "document.querySelector('#app>div>a').click()";
-            }
-
-            webView.loadUrl("javascript:" + execJs);
+            String[] info = selectedPhone.split(" ", 2);
+            String phone = info[0];
+            String password = info.length > 1 ? info[1] : null;
+            String execJs = JDUtil.buildLoginScript(phone, password, PHONE_PATTERN.matcher(phone).matches());
+            webView.evaluateJavascript(execJs, null);
         });
         // 获取cookie按钮
         getCookieBtn = findViewById(R.id.getCookieBtn);
         getCookieBtn.setOnClickListener(v -> {
-            Map<String, Object> map = JDUtil.formatCookies(cookie);
+            String rawCookie = CookieManager.getInstance().getCookie(JD_URL);
+            Map<String, Object> map = JDUtil.formatCookies(rawCookie);
             String ptKey = (String) map.get("pt_key");
             String ptPin = (String) map.get("pt_pin");
             if (StringUtils.isAnyBlank(ptKey, ptPin)) {
@@ -190,10 +163,10 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             String selectedPhone = (String) phoneSpinner.getSelectedItem();
-            String Phone="";
+            String phone = "";
             if (selectedPhone != null) {
-                String[] info=  selectedPhone.split(" ");
-                Phone=info[0];
+                String[] info = selectedPhone.split(" ", 2);
+                phone = info[0];
             }
 
             String cookie = MessageFormat.format("pt_key={0};pt_pin={1};", ptKey, ptPin);
@@ -202,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "获取成功，已复制到剪切板", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "获取成功，已复制到剪切板，尝试同步更新面板环境变量", Toast.LENGTH_SHORT).show();
-                updateCookie(cookie,Phone);
+                updateCookie(cookie, phone);
             }
         });
         // 重置cookie刷新页面按钮
