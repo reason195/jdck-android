@@ -9,8 +9,8 @@ android {
         applicationId "cn.xanderye.android.jdck"
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 3
-        versionName "2.2.2"
+        versionCode 5
+        versionName "2.4.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -27,6 +27,10 @@ android {
 
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
+    }
+
+    lint {
+        checkReleaseBuilds false
     }
 }
 

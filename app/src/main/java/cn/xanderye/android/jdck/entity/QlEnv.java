@@ -1,5 +1,6 @@
 package cn.xanderye.android.jdck.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 /**
@@ -10,7 +11,11 @@ import lombok.Data;
 @Data
 public class QlEnv {
 
-    private String _id;
+    @JSONField(name = "_id")
+    private String qlId;
+
+    @JSONField(name = "id")
+    private String daidaiId;
 
     private String name;
 

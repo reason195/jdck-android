@@ -5,7 +5,6 @@ import android.content.*;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -17,12 +16,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import cn.xanderye.android.jdck.R;
 import cn.xanderye.android.jdck.config.Config;
+import cn.xanderye.android.jdck.entity.PanelType;
 import cn.xanderye.android.jdck.entity.QlEnv;
 import cn.xanderye.android.jdck.entity.QlInfo;
 import cn.xanderye.android.jdck.receiver.SMSReceiver;
 import cn.xanderye.android.jdck.util.JDUtil;
-import cn.xanderye.android.jdck.util.QinglongUtil;
-import com.alibaba.fastjson.JSON;
+import cn.xanderye.android.jdck.util.PanelStore;
+import cn.xanderye.android.jdck.util.PanelUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         // 配置账号下拉框
         phoneSpinner = findViewById(R.id.phoneSpinner);
         String phoneStr = config.getString("phoneStr", null);
-        if (phoneStr != null) {
+        if (StringUtils.isNotBlank(phoneStr)) {
             String[] phones = phoneStr.split("\r\n");
             phoneSet = new HashSet<>(Arrays.asList(phones));
             updatePhone();
@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         addBtn = findViewById(R.id.addBtn);
         addBtn.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.add_account_title);
             final AlertDialog dialog = builder.create();
             View dialogView = View.inflate(context, R.layout.activity_phone, null);
             //设置对话框布局
@@ -116,15 +117,17 @@ public class MainActivity extends AppCompatActivity {
             dialog.show();
 
             EditText phoneText = dialogView.findViewById(R.id.phoneText);
+            EditText passwordText = dialogView.findViewById(R.id.passwordText);
             Button confirmBtn = dialogView.findViewById(R.id.confirmBtn);
             confirmBtn.setOnClickListener(v2 -> {
-                String phone = phoneText.getText().toString();
+                String phone = phoneText.getText().toString().trim();
+                String password = passwordText.getText().toString().trim();
                 if (StringUtils.isBlank(phone)) {
                     Toast.makeText(this, "账号输入错误", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 dialog.cancel();
-                phoneSet.add(phone);
+                phoneSet.add(StringUtils.isBlank(password) ? phone : phone + " " + password);
                 updatePhone();
                 Toast.makeText(this, "添加成功", Toast.LENGTH_SHORT).show();
             });
@@ -192,12 +195,11 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String cookie = MessageFormat.format("pt_key={0};pt_pin={1};", ptKey, ptPin);
-            QlInfo qlInfo = Config.getInstance().getQlInfo();
             copyToClipboard(cookie);
-            if (qlInfo == null || qlInfo.getToken() == null) {
+            if (enabledPanels().isEmpty()) {
                 Toast.makeText(this, "获取成功，已复制到剪切板", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "获取成功，已复制到剪切板，尝试自动更新青龙面板环境变量", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "获取成功，已复制到剪切板，尝试同步更新面板环境变量", Toast.LENGTH_SHORT).show();
                 updateCookie(cookie,Phone);
             }
         });
@@ -208,8 +210,8 @@ public class MainActivity extends AppCompatActivity {
             resetWebview();
         });
 
-        // 检查token有效 同时获取环境变量
-        checkQlLogin();
+        // 检查已启用面板的token有效 同时获取环境变量
+        checkPanels();
     }
 
     @Override
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean onCreateOptionsMenu(Menu menu) {
         String text = smsEnabled ? "关闭短信识别" : "开启短信识别";
-        menu.add(Menu.NONE, 1, 1, "青龙面板");
+        menu.add(Menu.NONE, 1, 1, "面板设置");
         menu.add(Menu.NONE, 2, 2, text);
         menu.add(Menu.NONE, 3, 3, "关于");
         return true;
@@ -362,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
         edit.putString("phoneStr", newPhoneStr);
         edit.apply();
         String[] phones = phoneSet.toArray(new String[0]);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, phones);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_phone, phones);
         phoneSpinner.setAdapter(adapter);
     }
 
@@ -387,32 +389,59 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkQlLogin() {
-        String qlJSON = config.getString("qlJSON", null);
-        if (qlJSON == null) {
+    private void checkPanels() {
+        List<QlInfo> panels = enabledPanels();
+        if (panels.isEmpty()) {
             return;
         }
-        QlInfo qlInfo = JSON.parseObject(qlJSON, QlInfo.class);
         ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
         singleThreadExecutor.execute(() -> {
-            Looper.prepare();
-
-
-            try {
-                List<QlEnv> qlEnvList = QinglongUtil.getEnvList(qlInfo,"");
-                Config.getInstance().setQlEnvList(qlEnvList);
-                Config.getInstance().setQlInfo(qlInfo);
-                Toast.makeText(this, "青龙token有效", Toast.LENGTH_SHORT).show();
-            } catch (IOException e) {
-                Toast.makeText(this, "青龙token已失效，请重新登录", Toast.LENGTH_SHORT).show();
+            List<String> valid = new ArrayList<>();
+            List<String> failed = new ArrayList<>();
+            for (QlInfo qlInfo : panels) {
+                String name = panelName(qlInfo.getPanelType());
+                try {
+                    String oldToken = qlInfo.getToken();
+                    List<QlEnv> qlEnvList = PanelUtil.getEnvList(qlInfo,"");
+                    Config.getInstance().getPanelInfos().put(qlInfo.getPanelType(), qlInfo);
+                    Config.getInstance().getEnvLists().put(qlInfo.getPanelType(), qlEnvList);
+                    // 呆呆面板令牌过期后已自动重登，持久化新令牌避免每次启动都重新登录
+                    if (!StringUtils.equals(oldToken, qlInfo.getToken())) {
+                        PanelStore.save(config, qlInfo);
+                    }
+                    valid.add(name);
+                } catch (IOException e) {
+                    failed.add(name + "连接失败：" + e.getMessage());
+                }
             }
-            Looper.loop();
+            runOnUiThread(() -> {
+                if (!valid.isEmpty()) {
+                    Toast.makeText(this, StringUtils.join(valid, "、") + "token有效", Toast.LENGTH_SHORT).show();
+                }
+                for (String message : failed) {
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         });
         singleThreadExecutor.shutdown();
     }
 
+    private List<QlInfo> enabledPanels() {
+        List<QlInfo> panels = new ArrayList<>();
+        for (QlInfo qlInfo : PanelStore.loadAll(config)) {
+            if (qlInfo.isEnabled() && StringUtils.isNotBlank(qlInfo.getToken())) {
+                panels.add(qlInfo);
+            }
+        }
+        return panels;
+    }
+
+    private String panelName(PanelType type) {
+        return type == PanelType.DAIDAI ? "呆呆面板" : "青龙面板";
+    }
+
     /**
-     * 调用青龙接口更新cookie
+     * 调用面板接口更新cookie
      * @param cookie
      * @return void
      * @author XanderYe
@@ -421,42 +450,62 @@ public class MainActivity extends AppCompatActivity {
     private void updateCookie(String cookie,String phone) {
         Map<String, Object> map = JDUtil.formatCookies(cookie);
         String ptPin = (String) map.get("pt_pin");
-        QlInfo qlInfo = Config.getInstance().getQlInfo();
-        List<QlEnv> qlEnvList =Config.getInstance().getQlEnvList();
-        if(qlEnvList==null){
-            qlEnvList=new ArrayList<QlEnv>();
-        }
+        List<QlInfo> panels = enabledPanels();
+        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+        singleThreadExecutor.execute(() -> {
+            List<String> success = new ArrayList<>();
+            List<String> failed = new ArrayList<>();
+            for (QlInfo qlInfo : panels) {
+                String name = panelName(qlInfo.getPanelType());
+                try {
+                    updatePanelCookie(qlInfo, cookie, phone, ptPin);
+                    success.add(name);
+                } catch (IOException e) {
+                    failed.add(name + "更新失败：" + e.getMessage());
+                }
+            }
+            runOnUiThread(() -> {
+                if (!success.isEmpty()) {
+                    Toast.makeText(this, "更新cookie成功：" + StringUtils.join(success, "、"), Toast.LENGTH_SHORT).show();
+                }
+                for (String message : failed) {
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+        singleThreadExecutor.shutdown();
+    }
+
+    private void updatePanelCookie(QlInfo qlInfo, String cookie, String phone, String ptPin) throws IOException {
+        // 每次更新前拉取最新环境变量，避免缓存过期导致重复新增
+        List<QlEnv> qlEnvList = PanelUtil.getEnvList(qlInfo, "");
+        Config.getInstance().getEnvLists().put(qlInfo.getPanelType(), qlEnvList);
         QlEnv targetEnv = null;
         for (QlEnv qlEnv : qlEnvList) {
             Map<String, Object> envMap = JDUtil.formatCookies(qlEnv.getValue());
             String tempPin = (String) envMap.get("pt_pin");
-            if(ptPin.equals(tempPin)) {
+            if (ptPin.equals(tempPin)) {
                 targetEnv = qlEnv;
                 break;
             }
         }
-        if (targetEnv == null) {
+        boolean isNew = targetEnv == null;
+        if (isNew) {
             targetEnv = new QlEnv();
             targetEnv.setName("JD_COOKIE");
         }
         targetEnv.setValue(cookie);
         targetEnv.setRemarks(phone);
-        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        QlEnv finalTargetEnv = targetEnv;
-        singleThreadExecutor.execute(() -> {
-            Looper.prepare();
-            try {
-                boolean success = QinglongUtil.saveEnv(qlInfo, finalTargetEnv);
-                QinglongUtil.EableEnv(qlInfo,finalTargetEnv);
-                if (success) {
-                    Toast.makeText(this, "更新cookie成功", Toast.LENGTH_SHORT).show();
-                }
-            } catch (IOException e) {
-                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-            Looper.loop();
-        });
-        singleThreadExecutor.shutdown();
-
+        boolean success = PanelUtil.saveEnv(qlInfo, targetEnv);
+        if (!success) {
+            throw new IOException("保存环境变量失败");
+        }
+        PanelUtil.enableEnv(qlInfo, targetEnv);
+        if (isNew) {
+            qlEnvList.add(targetEnv);
+        }
+        Config.getInstance().getPanelInfos().put(qlInfo.getPanelType(), qlInfo);
+        // 面板可能在请求过程中自动重登，持久化刷新后的令牌
+        PanelStore.save(config, qlInfo);
     }
 }

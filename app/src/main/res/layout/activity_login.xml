@@ -18,6 +18,35 @@
                       android:layout_weight="1.0"
                       android:layout_height="wrap_content"
                       android:gravity="right"
+                      android:text="@string/panel_type_text"/>
+            <RadioGroup
+                    android:id="@+id/panelTypeGroup"
+                    android:orientation="horizontal"
+                    android:layout_width="0dp"
+                    android:layout_weight="3.0"
+                    android:layout_height="wrap_content">
+                <RadioButton
+                        android:id="@+id/qinglongRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="@string/panel_qinglong_text"/>
+                <RadioButton
+                        android:id="@+id/daidaiRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/panel_daidai_text"/>
+            </RadioGroup>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView android:id="@+id/addressLabel"
+                      android:layout_width="0dp"
+                      android:layout_weight="1.0"
+                      android:layout_height="wrap_content"
+                      android:gravity="right"
                       android:text="@string/ql_address_text"/>
             <EditText
                     android:layout_width="0dp"
@@ -34,6 +63,7 @@
                 android:layout_height="wrap_content">
 
             <TextView
+                android:id="@+id/usernameLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
@@ -54,6 +84,7 @@
                 android:layout_height="wrap_content">
 
             <TextView
+                android:id="@+id/passwordLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
@@ -69,10 +100,12 @@
                 android:ems="10"
                 android:inputType="text" />
         </LinearLayout>
-        <LinearLayout
-                android:orientation="horizontal"
+        <CheckBox
+                android:id="@+id/panelEnabledCheck"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/panel_enabled_text"/>
 
         <LinearLayout
                 android:orientation="horizontal"

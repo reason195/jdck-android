@@ -98,9 +98,9 @@ public class QinglongUtil {
         params.put("remarks", qlEnv.getRemarks());
         params.put("value", qlEnv.getValue());
         HttpUtil.ResEntity resEntity;
-        if (qlEnv.get_id() != null) {
+        if (qlEnv.getQlId() != null) {
             // 更新
-            params.put("id", qlEnv.get_id());
+            params.put("id", qlEnv.getQlId());
             resEntity = HttpUtil.doPutJSON(url, headers, null, params.toJSONString());
 
         } else {
@@ -131,9 +131,9 @@ public class QinglongUtil {
         Map<String, Object> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + qlInfo.getToken());
         HttpUtil.ResEntity resEntity;
-        if (qlEnv.get_id() != null) {
+        if (qlEnv.getQlId() != null) {
             JSONArray ja=new JSONArray();
-            ja.add(qlEnv.get_id());
+            ja.add(qlEnv.getQlId());
 
             resEntity = HttpUtil.doPutJSON(url, headers, null, ja.toJSONString());
             if (resEntity.getStatusCode() != 200) {

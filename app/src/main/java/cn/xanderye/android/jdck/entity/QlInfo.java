@@ -22,4 +22,12 @@ public class QlInfo {
     private String password;
 
     private String token;
+
+    private PanelType panelType;
+
+    private boolean enabled = true;
+
+    public PanelType getPanelType() {
+        return panelType == null ? PanelType.QINGLONG : panelType;
+    }
 }
