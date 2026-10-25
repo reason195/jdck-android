@@ -1,68 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activity.MainActivity" app:layoutDescription="@xml/activity_main_scene" android:orientation="vertical">
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <Spinner android:layout_width="0dp"
-                 android:layout_weight="2.0"
-                 android:layout_marginLeft="4dp"
-                 android:layout_marginRight="4dp"
-                 android:layout_height="match_parent" android:id="@+id/phoneSpinner"/>
-        <Button
-                android:text="@string/add_btn_text"
-                android:layout_width="0dp"
-                android:layout_weight="1.0"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:id="@+id/addBtn"/>
-        <Button
-                android:text="@string/del_btn_text"
-                android:layout_width="0dp"
-                android:layout_weight="1.0"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:id="@+id/delBtn"/>
-    </LinearLayout>
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/background"
+              android:orientation="vertical"
+              tools:context=".activity.MainActivity">
 
-        <Button
-            android:id="@+id/inputBtn"
-            android:layout_width="28dp"
+    <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"
-            android:layout_weight="1.0"
-            android:text="@string/input_btn_text" />
-        <Button
-                android:text="@string/get_cookie_btn_text"
-                android:layout_width="0dp"
-                android:layout_weight="1.0"
-                android:layout_height="wrap_content" android:id="@+id/getCookieBtn"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-        />
-        <Button
-                android:text="@string/clear_cookie_btn_text"
-                android:layout_width="0dp"
-                android:layout_weight="1.0"
-                android:layout_height="wrap_content" android:id="@+id/clearCookieBtn"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-        />
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
 
-    </LinearLayout>
-    <WebView
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_spinner">
+
+                    <Spinner
+                            android:id="@+id/phoneSpinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@null"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="36dp"/>
+
+                    <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="end|center_vertical"
+                            android:layout_marginEnd="10dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_chevron_down"/>
+                </FrameLayout>
+
+                <Button
+                        android:id="@+id/addBtn"
+                        style="@style/AppButton.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="2dp"
+                        android:text="@string/add_btn_text"/>
+
+                <Button
+                        android:id="@+id/delBtn"
+                        style="@style/AppButton.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/del_btn_text"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                <Button
+                        android:id="@+id/inputBtn"
+                        style="@style/AppButton.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/input_btn_text"/>
+
+                <Button
+                        android:id="@+id/getCookieBtn"
+                        style="@style/AppButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="@string/get_cookie_btn_text"/>
+
+                <Button
+                        android:id="@+id/clearCookieBtn"
+                        style="@style/AppButton.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="@string/clear_cookie_btn_text"/>
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/webView"/>
+            android:layout_height="0dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
+
+        <WebView
+                android:id="@+id/webView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

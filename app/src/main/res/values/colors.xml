@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <color name="ic_launcher_background">#4F46E5</color>
+    <color name="brand_indigo">#4F46E5</color>
+    <color name="brand_indigo_dark">#4338CA</color>
+    <color name="brand_teal">#14B8A6</color>
+    <color name="background">#F4F5FB</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text_primary">#1F2937</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="outline">#E5E7EB</color>
+    <color name="secondary_container">#EEF2FF</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

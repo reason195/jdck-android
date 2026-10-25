@@ -14,6 +14,7 @@ import android.webkit.*;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import cn.xanderye.android.jdck.BuildConfig;
 import cn.xanderye.android.jdck.R;
 import cn.xanderye.android.jdck.config.Config;
 import cn.xanderye.android.jdck.entity.PanelType;
@@ -262,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
             } break;
             case 3: {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("@XanderYe 版权所有 @yclown修改");
+                builder.setMessage(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME + "\n@XanderYe 版权所有 @yclown修改");
                 builder.setPositiveButton("项目页面", (dialog, which) -> {
                     Uri uri = Uri.parse("https://github.com/yclown/jdck-android");
                     Intent intent = new Intent();

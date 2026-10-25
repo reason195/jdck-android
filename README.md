@@ -1,15 +1,16 @@
-# 青龙 / 呆呆面板 京东cookie 助手 安卓版
+# 青鸟CK - 京东 Cookie 助手（青龙 / 呆呆面板）
 
 ## PC版
 [JD_Get](https://github.com/yclown/ql_jd_cookie)
 
 ## 说明
-v2.4
-青龙面板、呆呆面板 获取京东cookie使用
+v2.5.0
+青鸟CK 用于从青龙面板、呆呆面板获取京东 Cookie，支持双面板同步更新。安装包可在 [Releases](https://github.com/reason195/jdck-android/releases) 下载，命名格式为 `青鸟CK-版本号.apk`。
 
 原项目 地址(https://github.com/XanderYe/jdck-android) 项目作者没有更新，就接过来自己更了
 
 ## 优化
+* 全新的 Material 界面与青鸟应用图标，设置页超长地址、ClientSecret、App Secret 自动换行完整显示
 * 支持青龙面板和呆呆面板（登录页选择面板类型）
 * 支持同时配置青龙与呆呆两个面板，获取 Cookie 后同步更新所有已启用的面板
 * 修改青龙面板的对应的接口地址
