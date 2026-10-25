@@ -4,13 +4,14 @@
 [JD_Get](https://github.com/yclown/ql_jd_cookie)
 
 ## 说明
-v2.5.3
+v2.5.4
 青鸟CK 用于从青龙面板、呆呆面板获取京东 Cookie，支持双面板同步更新。安装包可在 [Releases](https://github.com/reason195/jdck-android/releases) 下载，发布标题为「青鸟CK 版本号」，文件名为 `Qingniao-CK-版本号.apk`（GitHub 不支持中文资产名）。
 
 原项目 地址(https://github.com/XanderYe/jdck-android) 项目作者没有更新，就接过来自己更了
 
 ## 优化
 * 全新的 Material 界面与青鸟应用图标，设置页超长地址、ClientSecret、App Secret 自动换行完整显示
+* 账号下拉项加大到 16sp / 56dp，方便查看和点选已保存的账号密码
 * 修复青龙面板更新 Cookie 时重复新增环境变量（兼容新版 `id` 与旧版 `_id`），已有环境变量保留自定义备注
 * 添加账号弹窗改为圆角，按钮增加水波纹、按压缩放和主题色填充反馈
 * 一键填入支持含引号和空格的密码；Cookie 固定从京东域读取；青龙 token 失效自动重登

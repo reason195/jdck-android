@@ -340,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
         edit.apply();
         String[] phones = phoneSet.toArray(new String[0]);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_phone, phones);
+        adapter.setDropDownViewResource(R.layout.item_phone_dropdown);
         phoneSpinner.setAdapter(adapter);
     }
 

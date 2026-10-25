@@ -4,10 +4,12 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:ellipsize="end"
+          android:gravity="center_vertical"
+          android:lineSpacingExtra="2dp"
           android:maxLines="2"
           android:paddingLeft="4dp"
           android:paddingRight="4dp"
-          android:paddingTop="2dp"
-          android:paddingBottom="2dp"
+          android:paddingTop="4dp"
+          android:paddingBottom="4dp"
           android:textColor="?android:attr/textColorPrimary"
-          android:textSize="14sp"/>
+          android:textSize="15sp"/>
