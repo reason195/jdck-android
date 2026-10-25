@@ -5,7 +5,7 @@
 
 ## 说明
 v2.5.0
-青鸟CK 用于从青龙面板、呆呆面板获取京东 Cookie，支持双面板同步更新。安装包可在 [Releases](https://github.com/reason195/jdck-android/releases) 下载，命名格式为 `青鸟CK-版本号.apk`。
+青鸟CK 用于从青龙面板、呆呆面板获取京东 Cookie，支持双面板同步更新。安装包可在 [Releases](https://github.com/reason195/jdck-android/releases) 下载，发布标题为「青鸟CK 版本号」，文件名为 `Qingniao-CK-版本号.apk`（GitHub 不支持中文资产名）。
 
 原项目 地址(https://github.com/XanderYe/jdck-android) 项目作者没有更新，就接过来自己更了
 
