@@ -9,6 +9,24 @@ v2.5.4
 
 原项目 地址(https://github.com/XanderYe/jdck-android) 项目作者没有更新，就接过来自己更了
 
+## 构建
+本项目使用 Gradle 7.5 + AGP 7.4.2，需要 **JDK 17**。Gradle 7.5 自带的 R8（D8）不支持 JDK 21，用 JDK 21 构建会在 `:app:dexBuilderDebug` 阶段报 `D8: java.lang.NullPointerException`。
+
+- Android Studio：在 Gradle JDK 设置中选择 JDK 17（或 Android Studio 自带的 jbr-17）。
+- 命令行：
+
+```bash
+export JAVA_HOME=/path/to/jdk-17
+./gradlew assembleRelease
+```
+
+Windows 下对应：
+
+```bat
+set JAVA_HOME=C:\path\to\jdk-17
+gradlew.bat assembleRelease
+```
+
 ## 优化
 * 全新的 Material 界面与青鸟应用图标，设置页超长地址、ClientSecret、App Secret 自动换行完整显示
 * 账号下拉项加大到 16sp / 56dp，方便查看和点选已保存的账号密码

@@ -12,20 +12,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import cn.xanderye.android.jdck.R;
-import cn.xanderye.android.jdck.config.Config;
 import cn.xanderye.android.jdck.entity.PanelType;
-import cn.xanderye.android.jdck.entity.QlEnv;
 import cn.xanderye.android.jdck.entity.QlInfo;
 import cn.xanderye.android.jdck.util.PanelStore;
 import cn.xanderye.android.jdck.util.PanelUtil;
+import cn.xanderye.android.jdck.util.TaskExecutor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @origin XanderYe
@@ -126,8 +122,7 @@ public class LoginActivity extends AppCompatActivity {
         qlInfo.setPanelType(type);
         qlInfo.setEnabled(enabledCheck.isChecked());
 
-        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        singleThreadExecutor.execute(() -> {
+        TaskExecutor.execute(() -> {
             try {
                 String token = PanelUtil.login(qlInfo);
                 if (StringUtils.isBlank(token)) {
@@ -136,10 +131,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 qlInfo.setToken(token);
                 // 登录后更新环境变量，同时验证应用是否具备环境变量权限
-                List<QlEnv> envList = PanelUtil.getEnvList(qlInfo, "");
+                PanelUtil.getEnvList(qlInfo, "");
                 PanelStore.save(config, qlInfo);
-                Config.getInstance().getPanelInfos().put(type, qlInfo);
-                Config.getInstance().getEnvLists().put(type, envList);
                 runOnUiThread(() -> {
                     Toast.makeText(this, panelName(type) + "配置成功", Toast.LENGTH_SHORT).show();
                     this.finish();
@@ -148,7 +141,6 @@ public class LoginActivity extends AppCompatActivity {
                 toastOnUiThread(e.getMessage());
             }
         });
-        singleThreadExecutor.shutdown();
     }
 
     private void applyPanelType(PanelType panelType) {

@@ -15,8 +15,6 @@ import lombok.NoArgsConstructor;
 public class QlInfo {
     private String address;
 
-    private Boolean oldVersion;
-
     private String username;
 
     private String password;

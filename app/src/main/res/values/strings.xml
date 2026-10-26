@@ -23,6 +23,5 @@
     <string name="ql_token_text">token：</string>
     <string name="ql_login_btn_text">登录</string>
     <string name="ql_cancel_btn_text">取消</string>
-    <string name="ql_old_version_text">老版本</string>
     <string name="panel_settings_hint">配置仅保存在本机，用于同步面板环境变量</string>
 </resources>

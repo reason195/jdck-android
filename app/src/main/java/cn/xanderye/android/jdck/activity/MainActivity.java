@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,13 +24,12 @@ import cn.xanderye.android.jdck.receiver.SMSReceiver;
 import cn.xanderye.android.jdck.util.JDUtil;
 import cn.xanderye.android.jdck.util.PanelStore;
 import cn.xanderye.android.jdck.util.PanelUtil;
+import cn.xanderye.android.jdck.util.TaskExecutor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -39,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Context context;
 
-    private Button addBtn, delBtn, inputBtn, getCookieBtn, clearCookieBtn,sendCK;
+    private Button addBtn, delBtn, inputBtn, getCookieBtn, clearCookieBtn;
 
     private Spinner phoneSpinner;
 
@@ -192,6 +190,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         unregisterSMSReceiver();
+        // 单例不能再持有即将销毁的 WebView，否则短信接收器会向已销毁界面注入脚本
+        if (Config.getInstance().getWebView() == webView) {
+            Config.getInstance().setWebView(null);
+        }
         super.onDestroy();
     }
 
@@ -370,18 +372,16 @@ public class MainActivity extends AppCompatActivity {
         if (panels.isEmpty()) {
             return;
         }
-        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        singleThreadExecutor.execute(() -> {
+        TaskExecutor.execute(() -> {
             List<String> valid = new ArrayList<>();
             List<String> failed = new ArrayList<>();
             for (QlInfo qlInfo : panels) {
                 String name = panelName(qlInfo.getPanelType());
                 try {
                     String oldToken = qlInfo.getToken();
-                    List<QlEnv> qlEnvList = PanelUtil.getEnvList(qlInfo,"");
-                    Config.getInstance().getPanelInfos().put(qlInfo.getPanelType(), qlInfo);
-                    Config.getInstance().getEnvLists().put(qlInfo.getPanelType(), qlEnvList);
-                    // 呆呆面板令牌过期后已自动重登，持久化新令牌避免每次启动都重新登录
+                    // 拉取环境变量同时验证 token 是否仍然有效
+                    PanelUtil.getEnvList(qlInfo, "");
+                    // 面板令牌过期后已自动重登，持久化新令牌避免每次启动都重新登录
                     if (!StringUtils.equals(oldToken, qlInfo.getToken())) {
                         PanelStore.save(config, qlInfo);
                     }
@@ -399,7 +399,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-        singleThreadExecutor.shutdown();
     }
 
     private List<QlInfo> enabledPanels() {
@@ -427,8 +426,7 @@ public class MainActivity extends AppCompatActivity {
         Map<String, Object> map = JDUtil.formatCookies(cookie);
         String ptPin = (String) map.get("pt_pin");
         List<QlInfo> panels = enabledPanels();
-        ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-        singleThreadExecutor.execute(() -> {
+        TaskExecutor.execute(() -> {
             List<String> success = new ArrayList<>();
             List<String> failed = new ArrayList<>();
             for (QlInfo qlInfo : panels) {
@@ -449,13 +447,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-        singleThreadExecutor.shutdown();
     }
 
     private void updatePanelCookie(QlInfo qlInfo, String cookie, String phone, String ptPin) throws IOException {
         // 每次更新前拉取最新环境变量，避免缓存过期导致重复新增
         List<QlEnv> qlEnvList = PanelUtil.getEnvList(qlInfo, "");
-        Config.getInstance().getEnvLists().put(qlInfo.getPanelType(), qlEnvList);
         QlEnv targetEnv = null;
         for (QlEnv qlEnv : qlEnvList) {
             Map<String, Object> envMap = JDUtil.formatCookies(qlEnv.getValue());
@@ -483,7 +479,6 @@ public class MainActivity extends AppCompatActivity {
         if (isNew) {
             qlEnvList.add(targetEnv);
         }
-        Config.getInstance().getPanelInfos().put(qlInfo.getPanelType(), qlInfo);
         // 面板可能在请求过程中自动重登，持久化刷新后的令牌
         PanelStore.save(config, qlInfo);
     }
