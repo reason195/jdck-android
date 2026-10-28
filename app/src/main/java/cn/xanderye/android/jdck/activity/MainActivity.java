@@ -4,12 +4,14 @@ import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.*;
 import android.content.pm.PackageManager;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.*;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,9 +43,15 @@ public class MainActivity extends AppCompatActivity {
 
     private Spinner phoneSpinner;
 
+    private ImageView togglePwdBtn;
+
+    private boolean passwordVisible;
+
     private WebView webView;
 
     private static final String JD_URL = "https://home.m.jd.com/myJd/home.action";
+
+    private static final int PASSWORD_MASK_LENGTH = 8;
 
     private static final Pattern PHONE_PATTERN = Pattern.compile("1\\d{10}");
 
@@ -88,6 +96,12 @@ public class MainActivity extends AppCompatActivity {
         });
         // 配置账号下拉框
         phoneSpinner = findViewById(R.id.phoneSpinner);
+        togglePwdBtn = findViewById(R.id.togglePwdBtn);
+        togglePwdBtn.setOnClickListener(v -> {
+            passwordVisible = !passwordVisible;
+            updateEye();
+            updatePhone();
+        });
         String phoneStr = config.getString("phoneStr", null);
         if (StringUtils.isNotBlank(phoneStr)) {
             String[] phones = phoneStr.split("\r\n");
@@ -341,9 +355,83 @@ public class MainActivity extends AppCompatActivity {
         edit.putString("phoneStr", newPhoneStr);
         edit.apply();
         String[] phones = phoneSet.toArray(new String[0]);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_phone, phones);
-        adapter.setDropDownViewResource(R.layout.item_phone_dropdown);
-        phoneSpinner.setAdapter(adapter);
+        phoneSpinner.setAdapter(new AccountAdapter(phones));
+        fitDropDownWidth();
+    }
+
+    /**
+     * 浮层宽度按最长一条的实测文本决定，下限是下拉框宽度，上限是不超出屏幕两侧留白
+     */
+    private void fitDropDownWidth() {
+        phoneSpinner.post(() -> {
+            int boxWidth = phoneSpinner.getWidth();
+            if (boxWidth == 0) {
+                return;
+            }
+            int[] location = new int[2];
+            phoneSpinner.getLocationOnScreen(location);
+            int limit = getResources().getDisplayMetrics().widthPixels - 2 * location[0];
+            int contentWidth = measureDropDownContentWidth();
+            phoneSpinner.setDropDownWidth(Math.max(boxWidth, Math.min(contentWidth, limit)));
+            phoneSpinner.setDropDownHorizontalOffset(-phoneSpinner.getPaddingStart());
+        });
+    }
+
+    private int measureDropDownContentWidth() {
+        SpinnerAdapter adapter = phoneSpinner.getAdapter();
+        if (adapter == null) {
+            return 0;
+        }
+        Paint paint = new Paint();
+        paint.setTextSize(16 * getResources().getDisplayMetrics().scaledDensity);
+        // item_phone_dropdown 左右各 16dp 内边距
+        int padding = (int) (32 * getResources().getDisplayMetrics().density);
+        int width = 0;
+        for (int i = 0; i < adapter.getCount(); i++) {
+            Object item = adapter.getItem(i);
+            if (item != null) {
+                width = Math.max(width, (int) Math.ceil(paint.measureText(item.toString())) + padding);
+            }
+        }
+        return width;
+    }
+
+    private void updateEye() {
+        togglePwdBtn.setImageResource(passwordVisible ? R.drawable.ic_eye_off : R.drawable.ic_eye);
+        togglePwdBtn.setContentDescription(getString(passwordVisible ? R.string.hide_password_desc : R.string.show_password_desc));
+    }
+
+    /**
+     * 遮罩只影响显示，getSelectedItem() 仍返回原值供登录、删除使用
+     */
+    private String displayAccount(String account) {
+        if (passwordVisible || account == null) {
+            return account;
+        }
+        int split = account.indexOf(' ');
+        return split < 0 ? account : account.substring(0, split + 1) + StringUtils.repeat('*', PASSWORD_MASK_LENGTH);
+    }
+
+    private class AccountAdapter extends ArrayAdapter<String> {
+
+        AccountAdapter(String[] accounts) {
+            super(MainActivity.this, R.layout.item_phone, accounts);
+            setDropDownViewResource(R.layout.item_phone_dropdown);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TextView view = (TextView) super.getView(position, convertView, parent);
+            view.setText(displayAccount(getItem(position)));
+            return view;
+        }
+
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            TextView view = (TextView) super.getDropDownView(position, convertView, parent);
+            view.setText(displayAccount(getItem(position)));
+            return view;
+        }
     }
 
     /**

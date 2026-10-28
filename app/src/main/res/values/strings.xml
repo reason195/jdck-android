@@ -8,6 +8,8 @@
     <string name="confirm_btn_text">添加</string>
     <string name="save_btn_text">保存</string>
     <string name="add_account_title">添加账号</string>
+    <string name="show_password_desc">显示密码</string>
+    <string name="hide_password_desc">隐藏密码</string>
     <string name="phone_hint_text">京东账号/手机号</string>
     <string name="password_hint_text">密码（可留空）</string>
     <string name="ql_login_name">面板设置</string>
